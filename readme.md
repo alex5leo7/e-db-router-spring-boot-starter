@@ -66,16 +66,30 @@ hash是可以解决数据均匀的问题，range可以解决数据迁移问题�
 
 
 
-## 其他
+## 快速开始
 
-路由配置
+### 引入依赖
+```xml
+<!-- druid-->
+<dependency>
+  <groupId>com.alibaba</groupId>
+  <artifactId>druid-spring-boot-starter</artifactId>
+  <version>1.2.5</version>
+</dependency>
+<!-- db-router-spring-boot-starter -->
+<dependency>
+  <groupId>cn.electric.middleware</groupId>
+  <artifactId>e-db-router-spring-boot-starter</artifactId>
+  <version>1.0-SNAPSHOT</version>
+</dependency>
+```
 
+### 路由配置
 ```yml
 mybatis:
   mapper-locations: classpath:/mybatis/mapper/*.xml
   config-location:  classpath:/mybatis/config/mybatis-config.xml
 
-# 路由配置
 mini-db-router:
   jdbc:
     datasource:
@@ -118,4 +132,35 @@ mini-db-router:
         username: root
         password: 123
 ```
+
+### 使用
+mapper.xml
+```xml
+<select id="queryMeasureInfoById" parameterType="cn.electric.middleware.test.infrastructure.po.Measure"
+            resultType="cn.electric.middleware.test.infrastructure.po.Measure">
+        SELECT *
+        FROM measure_${tbIdx}
+        where measure_id = #{measureId}
+</select>
+
+<insert id="insertMeasure" parameterType="cn.electric.middleware.test.infrastructure.po.Measure">
+  insert into measure_${tbIdx} (id, f1, f2, f3, ..., updateTime)
+  values (#{id}, #{f1}, #{f2}, #{f3}, ..., #{updateTime})
+</insert>
+```
+
+mapper.java
+```java
+@Mapper
+public interface IMeasureDao {
+
+     @DBRouter(key = "id")
+     Measure queryMeasureInfoById(Measure req);
+
+     @DBRouter(key = "id")
+     void insertMeasure(Measure req);
+
+}
+```
+
 
